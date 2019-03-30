@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pathfinder</title>
+    <script src="utils.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css?family=Ubuntu" rel="stylesheet">
+</head>
+<body></body>
+<script>
+  window.onload = function() {
+    const maze = [
+      [1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+      [1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0],
+      [1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0],
+      [1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+      [1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0],
+      [1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0],
+      [1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0],
+      [1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0],
+      [0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+      [1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0],
+      [1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1],
+      [1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1],
+      [1, 1, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1],
+      [1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    ];
+
+    const graph = buildGraphFromMaze(maze);
+    const tracedGraph = traceGraph(graph, 0, 0);
+    const tracedPath = tracePath(tracedGraph, 15, 15);
+    const pathMatrix = buildPathMatrix(tracedPath, maze.length, maze[0].length);
+
+    print("MAZE");
+    printArray2(maze);
+    print("Graph");
+    printArray(graph);
+    print("Traced Graph");
+    printArray(tracedGraph);
+    print(`Traced Path, ${tracedPath.length} steps`);
+    printArray(tracedPath);
+    printArray2(pathMatrix);
+
+    // Create array of edges with all of points.
+    // Note, that every edge is bidirectional
+    function buildGraphFromMaze(maze) {
+      const sizeX = maze[0].length;
+      const sizeY = maze.length;
+      const graphList = [];
+
+      for (let iy = 0; iy < sizeY; iy++) {
+        for (let ix = 0; ix < sizeX; ix++) {
+          make(ix, iy, ix + 1, iy);
+          make(ix, iy, ix, iy + 1);
+          make(ix + 1, iy, ix, iy);
+          make(ix, iy + 1, ix, iy);
+        }
+      }
+      return graphList;
+
+      function get(x, y) {
+        if (x >= 0 && x < sizeX && y >= 0 && y < sizeY) {
+          return maze[y][x];
+        }
+        return 0;
+      }
+
+      function make(sx, sy, tx, ty) {
+        if (get(sx, sy) && get(tx, ty)) {
+          graphList.push({
+            fromX: sx,
+            fromY: sy,
+            toX: tx,
+            toY: ty,
+            dist: 0,
+            toString: function () {
+              return `{${this.fromX},${this.fromY} -> ${this.toX},${this.toY}}`
+            }
+          });
+        }
+      }
+    }
+
+    // Makes the distance from the starting point to every point
+    function traceGraph(graph, fromX, fromY) {
+      const newMap = graph.map(function (el) {
+        const newEl = Object.assign({}, el);
+        newEl.dist = 99999;
+        newEl.toString = function () {
+          return `{${this.fromX},${this.fromY} -> ${this.toX},${this.toY}(${this.dist})}`
+        };
+        if (newEl.fromX == fromX && newEl.fromY == fromY) {
+          newEl.dist = 0;
+        }
+        return newEl;
+      });
+
+      while (1) {
+        let isChanged = false;
+        newMap.forEach(function (el) {
+          newMap.forEach(function (it) {
+            if ((el.dist > it.dist + 1) && (el.fromX == it.toX && el.fromY == it.toY)){
+              isChanged = true;
+              el.dist = it.dist + 1;
+            }
+          });
+        });
+        if (!isChanged) break;
+      }
+      return newMap;
+    }
+
+    // Makes array of points, going from the target to starting position
+    function tracePath(graph, toX, toY) {
+      const path = [];
+      let newPoint = findTo(toX, toY, 99999);
+      if (newPoint){
+        path.push(newPoint);
+        while(newPoint.dist){
+          newPoint = findTo(newPoint.fromX, newPoint.fromY, newPoint.dist);
+          if (newPoint == null) return [];
+          path.push(newPoint);
+        }
+      }
+      return path.reverse();
+
+      function findTo(toX, toY, dist) {
+        let out = null;
+        graph.forEach(function (el) {
+          if (((el.toX == toX && el.toY == toY))
+            && (out == null || el.dist < out.dist)
+            && el.dist < dist) {
+            out = el;
+          }
+        });
+        return out;
+      }
+    }
+
+    // Makes zero matrix with of ones
+    function buildPathMatrix(path, sizeY, sizeX){
+      const matrix = new Array(sizeY).fill(0).map(function (el){return new Array(sizeX).fill(0)});
+      path.forEach(function (el){
+        matrix[el.fromY][el.fromX] = 1;
+        matrix[el.toY][el.toX] = 1;
+      });
+      return matrix;
+    }
+  }
+</script>
+</html>
