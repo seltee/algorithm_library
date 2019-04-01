@@ -1,3 +1,5 @@
+let timer = 0;
+
 function print(val){
   var body = document.body;
   var div = document.createElement('div');
@@ -17,4 +19,14 @@ function printArray2(arr2){
   arr2.forEach(function(arr){
     printArray(arr);
   });
+}
+
+function startTimer(){
+  timer = Date.now();
+}
+
+function getTimer(){
+  const out = Date.now() - timer;
+  timer = Date.now();
+  return out;
 }

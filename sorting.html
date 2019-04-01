@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sorting algorithms</title>
+    <script src="utils.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css?family=Ubuntu" rel="stylesheet">
+</head>
+<body></body>
+<script>
+  window.onload = function() {
+    const array = new Array(2000).fill(0).map(function (){ return Math.floor(Math.random()*50)});
+    startTimer();
+    const byBubbleSort = bubbleSort(array);
+    const bubbleSortTime = getTimer();
+    const byFastSort = fastSort(array);
+    const fastSortTime = getTimer();
+
+    print("Unsorted");
+    printArray(array);
+    print(`Bubble sort (${bubbleSortTime} ms)`);
+    printArray(byBubbleSort);
+    print(`Fast sort (${fastSortTime} ms)`);
+    printArray(byFastSort);
+
+    function bubbleSort(array){
+      let copy = array.slice();
+      const length = array.length;
+      while(1){
+        let changesMade = false;
+        for (let i = 0; i < length-1; i++){
+          if (copy[i] > copy[i+1]){
+            let a = copy[i];
+            copy[i] = copy[i+1];
+            copy[i+1] = a;
+            changesMade = true;
+          }
+        }
+        if (!changesMade) return copy;
+      }
+    }
+
+    function fastSort(array){
+      const length = array.length;
+      if (length <= 1) return array;
+      if (isAllTheSame(array)) return array;
+      const value = array[Math.floor(Math.random()*length)];
+      const subArray = [];
+
+      array = array.filter(function(el){
+        if (el < value){
+          subArray.push(el);
+          return false;
+        }
+        return true;
+      });
+      return fastSort(subArray).concat(fastSort(array));
+
+      function isAllTheSame(array){
+        return array.every(function(el){return array[0] == el});
+      }
+    }
+  }
+</script>
+</html>
