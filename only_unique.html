@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title><!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <title>Sorting algorithms</title>
+            <script src="utils.js"></script>
+            <link rel="stylesheet" href="style.css">
+            <link href="https://fonts.googleapis.com/css?family=Ubuntu" rel="stylesheet">
+        </head>
+<body></body>
+<script>
+  window.onload = function() {
+    const array = new Array(100).fill(0).map(function (){ return Math.floor(Math.random()*99)});
+    const unique = getUnique(array);
+
+    print("Full array");
+    printArray(array);
+    print("Unique");
+    printArray(unique);
+
+    function getUnique(array){
+      const o = {};
+      array.forEach(function (el){
+        o[el] = true;
+      });
+      return Object.keys(o);
+    }
+  }
+</script>
+</html></title>
+</head>
+<body>
+
+</body>
+</html>
